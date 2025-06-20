@@ -18,8 +18,12 @@ const geistMono = Geist_Mono({
 
 type Props = {
   children: ReactNode;
-  params: Promise<{ locale: Locale }>;
+  params: Promise<{ locale: Locale }>; // Promise here for layout!
 };
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 
 export async function generateMetadata({ params }: Omit<Props, "children">) {
   const { locale } = await params;
@@ -30,19 +34,15 @@ export async function generateMetadata({ params }: Omit<Props, "children">) {
   };
 }
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-}) {
-  // Ensure that the incoming `locale` is valid
+export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
+
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
+
   setRequestLocale(locale);
+
   return (
     <html lang={locale}>
       <body
@@ -52,8 +52,4 @@ export default async function LocaleLayout({
       </body>
     </html>
   );
-}
-
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
 }
